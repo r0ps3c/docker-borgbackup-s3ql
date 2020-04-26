@@ -1,1 +1,1 @@
-# docker-borgmatic
+# docker-borg
