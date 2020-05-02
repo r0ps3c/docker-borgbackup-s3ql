@@ -6,11 +6,8 @@ then
 	exit 1
 fi
 
-if ! mount.s3ql --authfile ${AUTHFILE} ${SURL} ${MNTPOINT}
+if ! mount.s3ql --fg --authfile ${AUTHFILE} ${SURL} ${MNTPOINT}
 then
 	echo "unable to mount fs" >& 2
 	exit 1
 fi
-
-/usr/local/bin/borg $@ ${MNTPOINT}
-fusermount -u "${MNTPOINT}"

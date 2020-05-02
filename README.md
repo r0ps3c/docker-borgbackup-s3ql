@@ -1,1 +1,1 @@
-# docker-borgbackup-s3ql
+# docker-s3ql

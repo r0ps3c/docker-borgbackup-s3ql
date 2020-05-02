@@ -25,7 +25,7 @@ RUN \
  	python3 setup.py install --user
 
 FROM python:alpine
-RUN apk --no-cache add fuse3 psmisc
+RUN apk --no-cache add fuse3 psmisc rsync
 COPY --from=build /root/.local/bin/ /usr/local/bin/
 COPY --from=build /root/.local/lib/ /usr/local/lib/
 RUN \
