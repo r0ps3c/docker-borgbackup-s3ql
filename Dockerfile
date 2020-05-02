@@ -1,21 +1,35 @@
-FROM python:alpine as builder
+FROM python:alpine AS build
+
 ENV PYTHONUNBUFFERED 1
-ENV BORGBACKUP_VER 1.1.11
+ARG S3QL_VERSION="3.4.0"
+ARG FILE="s3ql-$S3QL_VERSION"
+ARG URL="https://github.com/s3ql/s3ql/releases/download/release-$S3QL_VERSION/$FILE.tar.bz2"
+
 RUN \
-	apk --no-cache add build-base python3-dev acl-dev attr-dev openssl-dev linux-headers libffi-dev && \
-	wget https://github.com/borgbackup/borg/releases/download/${BORGBACKUP_VER}/borgbackup-${BORGBACKUP_VER}.tar.gz && \
-	tar xf borgbackup-${BORGBACKUP_VER}.tar.gz && \
-	cd borgbackup-${BORGBACKUP_VER} && \
-	pip3 install -r requirements.d/development.txt && \
-	pip3 wheel -w /wheels .
+	apk --no-cache add curl gnupg jq bzip2 g++ make pkgconfig fuse3-dev sqlite-dev libffi-dev openssl-dev
+RUN \
+	pip3 install --user --ignore-installed cryptography defusedxml \
+	requests "apsw >= 3.7.0" "trio >= 0.9" "pyfuse3 >= 1.0, < 2.0" "dugong >= 3.4, < 4.0" google-auth google-auth-oauthlib
+RUN gpg2 --batch --recv-key 0xD113FCAC3C4E599F
+
+
+RUN \
+	set -x; \
+    	curl -sfL "$URL" -o "/tmp/$FILE.tar.bz2" && \
+ 	curl -sfL "$URL.asc" | gpg2 --batch --verify - "/tmp/$FILE.tar.bz2" && \
+ 	tar -xjf "/tmp/$FILE.tar.bz2"
+
+WORKDIR $FILE
+RUN \
+	python3 setup.py build_ext --inplace && \
+ 	python3 setup.py install --user
 
 FROM python:alpine
-COPY --from=builder /wheels /wheels
-
+RUN apk --no-cache add fuse3 psmisc
+COPY --from=build /root/.local/bin/ /usr/local/bin/
+COPY --from=build /root/.local/lib/ /usr/local/lib/
 RUN \
-	apk --no-cache add openssh-client libacl && \
-    	pip3 install -f /wheels borgbackup && \
-    	rm -fr /var/cache/apk/* /wheels /.cache
+	rm -rf /var/cache/apk/*
 
-WORKDIR /
-ENTRYPOINT ["/usr/local/bin/borg"]
+COPY entrypoint /
+ENTRYPOINT ["/entrypoint"]

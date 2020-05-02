@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ -z "${MNTPOINT}" ] || [ -z "${AUTHFILE}" ] || [ -z "${SURL}" ]
+then
+	echo "missing \$MNTPOINT \$AUTHFILE or \$SURL"
+	exit 1
+fi
+
+if ! mount.s3ql --authfile ${AUTHFILE} ${SURL} ${MNTPOINT}
+then
+	echo "unable to mount fs" >& 2
+	exit 1
+fi
+
+/usr/local/bin/borg $@ ${MNTPOINT}
+fusermount -u "${MNTPOINT}"
