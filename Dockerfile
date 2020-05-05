@@ -24,7 +24,7 @@ RUN \
 	python3 setup.py build_ext --inplace && \
  	python3 setup.py install --user
 
-FROM python:alpine
+FROM v01d2/borgbackup
 RUN apk --no-cache add fuse3 psmisc rsync
 COPY --from=build /root/.local/bin/ /usr/local/bin/
 COPY --from=build /root/.local/lib/ /usr/local/lib/
