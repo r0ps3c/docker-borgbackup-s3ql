@@ -1,12 +1,12 @@
 FROM python:alpine AS build
 
 ENV PYTHONUNBUFFERED 1
-ARG S3QL_VERSION="3.4.0"
+ARG S3QL_VERSION="3.4.1"
 ARG FILE="s3ql-$S3QL_VERSION"
 ARG URL="https://github.com/s3ql/s3ql/releases/download/release-$S3QL_VERSION/$FILE.tar.bz2"
 
 RUN \
-	apk --no-cache add curl gnupg jq bzip2 g++ make pkgconfig fuse3-dev sqlite-dev libffi-dev openssl-dev
+	apk --no-cache add curl gnupg jq bzip2 g++ make pkgconfig fuse3-dev sqlite-dev libffi-dev openssl-dev python3-dev
 RUN \
 	pip3 install --user --ignore-installed cryptography defusedxml \
 	requests "apsw >= 3.7.0" "trio >= 0.9" "pyfuse3 >= 1.0, < 2.0" "dugong >= 3.4, < 4.0" google-auth google-auth-oauthlib
